@@ -7,6 +7,24 @@ const prisma = new PrismaClient();
 const Localstrategy = require("passport-local").Strategy;
 const session = require("express-session")
 const multer = require("multer")
+const cloudinary = require("cloudinary").v2;
+const {CloudinaryStorage} = require("multer-storage-cloudinary");
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+})
+
+const storage = new CloudinaryStorage({
+    cloudinary,
+    params:{
+        folder: "filenest",
+        resource_type: "auto"
+    },
+})
+
+const upload = multer({ storage });
 
 app.use(session({
     secret:"secret",
@@ -52,17 +70,18 @@ passport.deserializeUser(async(id,done)=>{
     }
 })
 
-const storage = multer.diskStorage({
-    destination : function(req, file, cb){
-        cb(null,"uploads/");
-    },
-    filename: function(req,file,cb){
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random()*1E9);
-        cb(null, uniqueSuffix+path.extname(file.originalname))
-    }
-});
+// const storage = multer.diskStorage({
+//     destination : function(req, file, cb){
+//         cb(null,"uploads/");
+//     },
+//     filename: function(req,file,cb){
+//         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random()*1E9);
+//         cb(null, uniqueSuffix+path.extname(file.originalname))
+//     }
+// });
 
-const upload = multer({storage:storage});
+
+// const upload = multer({storage:storage});
 
 app.get("/", (req,res)=>{
     res.redirect("/login")
@@ -173,12 +192,12 @@ app.post("/upload", ensureAuthenticated,upload.single('myFile'), async(req,res)=
         await prisma.file.create({
             data:{
                 filename: req.file.originalname,
-                filepath: req.file.path,
+                fileUrl: req.file.path,
                 userId: req.user.id,
                 folderId: folderId,
             }
         })
-        res.send("File uploaded and save in DB");
+        res.redirect("/dashboard");
     }
     catch(err){
         console.error(err);
