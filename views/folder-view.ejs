@@ -12,14 +12,26 @@
                 <li>
                     <%= file.filename %>
                     <form action="/delete-file" method="post" style="display:inline;">
-                    <a href="/<%= file.filepath %>" target="_blank">View</a>
+                    <a href="<%= file.fileUrl %>" target="_blank">[View]</a>
                     <input type="hidden" name="fileId" value="<%= file.id %>">
+                    <a href="<%= file.fileUrl.replace('/upload/', '/upload/fl_attachment/') %>">[Download]</a>
                     <button type="submit">Delete</button>
-                    </form>
+                </form>
+                <button onclick="copyToClipboard('<%= file.fileUrl %>')">[Copy Link]</button>
                 </li>
                 <% }) %>
             </ul>
         <% } %>
         <a href="/dashboard">Back to dashboard</a>
+                <script>
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                alert("Link copied to clipboard!");
+                }).catch(err => {
+                alert("Failed to copy link.");
+                console.error(err);
+                });
+            }
+        </script>
     </body>
 </html>

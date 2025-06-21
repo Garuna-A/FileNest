@@ -14,8 +14,10 @@
             <% files.map(file=>{%>
                 <li><%= file.filename %>
                     <form action="/delete-file" method="post">
-                    <a href="<%= file.filepath %>" target="_blank">View</a>
+                    <a href="<%= file.fileUrl %>" target="_blank">View</a>
                     <input type="hidden" name="fileId" value="<%=file.id%>">
+                    <a href="<%= file.fileUrl.replace('/upload/', '/upload/fl_attachment/') %>">Download</a>
+                    <button onclick="copyToClipboard('<%= file.fileUrl %>')">Copy Link</button>
                     <button type="submit">Delete</button>
                     </form>
                 </li>
@@ -23,5 +25,16 @@
             <%})%>
         </ul>
         <a href="/upload">Add new file</a>
+        <script>
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                alert("Link copied to clipboard!");
+                }).catch(err => {
+                alert("Failed to copy link.");
+                console.error(err);
+                });
+            }
+        </script>
+
     </body>
 </html>
