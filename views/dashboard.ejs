@@ -1,0 +1,15 @@
+<html>
+    <head>
+        <title>Dashboard</title>
+    </head>
+    <body>
+        <ul>
+            
+            <% files.map(file=>{%>
+                <li><%= file.filename %>
+                <a href="<%= file.filepath %>" target="_blank">View</a></li>
+            <%})%>
+        </ul>
+        <a href="/upload">Add new file</a>
+    </body>
+</html>

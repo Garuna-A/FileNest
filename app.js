@@ -71,7 +71,7 @@ app.get("/login", (req,res)=>{
     res.render("login")
 })
 app.post("/login", passport.authenticate("local",{
-    successRedirect: "/upload",
+    successRedirect: "/dashboard",
     failureRedirect: "/login",
 }))
 
@@ -118,19 +118,26 @@ app.post("/create-folder",ensureAuthenticated,async(req,res)=>{
         res.status(500).send("Error creating folder");
     }
 })
+app.get("/dashboard",ensureAuthenticated,async(req,res)=>{
+    const files = await prisma.file.findMany({
+        where: {userId: req.user.id}
+    })
+    res.render("dashboard",{files})
+})
+app.use("/uploads", express.static("uploads"));
 app.get("/upload", ensureAuthenticated,async(req,res)=>{
     const userFolders = await prisma.folder.findMany({
         where: {userId: req.user.id}
     })
     res.render("upload", {userFolders})
 })
-app.post("/upload", ensureAuthenticated,upload.single('myFile'), (req,res)=>{
+app.post("/upload", ensureAuthenticated,upload.single('myFile'), async(req,res)=>{
     const folderId = req.body.folderId ? parseInt(req.body.folderId):null;
     if(!req.file){
         return  res.status(400).send("No file uploaded")
     }
     try{
-        prisma.file.create({
+        await prisma.file.create({
             data:{
                 filename: req.file.originalname,
                 filepath: req.file.path,
