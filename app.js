@@ -119,12 +119,45 @@ app.post("/create-folder",ensureAuthenticated,async(req,res)=>{
     }
 })
 app.get("/dashboard",ensureAuthenticated,async(req,res)=>{
+    const folders = await prisma.folder.findMany({
+        where:{userId: req.user.id}
+    })
     const files = await prisma.file.findMany({
         where: {userId: req.user.id}
     })
-    res.render("dashboard",{files})
+    res.render("dashboard",{files, folders})
 })
 app.use("/uploads", express.static("uploads"));
+app.post("/delete-file", async(req,res)=>{
+    const fileId = req.body.fileId;
+    await prisma.file.delete({
+        where:{
+            id: parseInt(fileId)
+        }
+    })
+    res.redirect("/dashboard")
+})
+app.get("/folder/:id",ensureAuthenticated,async(req,res)=>{
+    const folderId = parseInt(req.params.id)
+    try{
+        const folder = await prisma.folder.findUnique({
+            where: {id: folderId},
+            include:{
+                file: true,
+            }
+        });
+        if(!folder){
+            return res.send("Folder not found");
+        }
+        res.render("folder-view",{
+            folder,
+            files: folder.file
+        })
+    }catch(err){
+        console.error(err);
+        res.send("Error loading folder")
+    }
+})
 app.get("/upload", ensureAuthenticated,async(req,res)=>{
     const userFolders = await prisma.folder.findMany({
         where: {userId: req.user.id}

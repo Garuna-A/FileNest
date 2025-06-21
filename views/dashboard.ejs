@@ -4,10 +4,22 @@
     </head>
     <body>
         <ul>
-            
+            <h2>Folders: </h2>
+            <% folders.map(folder=>{%>
+                <li><a href="/folder/<%= folder.id %>"><%= folder.name%></a></li>
+            <%})%>
+        </ul>
+        <ul>
+            <h2>Files: </h2>
             <% files.map(file=>{%>
                 <li><%= file.filename %>
-                <a href="<%= file.filepath %>" target="_blank">View</a></li>
+                    <form action="/delete-file" method="post">
+                    <a href="<%= file.filepath %>" target="_blank">View</a>
+                    <input type="hidden" name="fileId" value="<%=file.id%>">
+                    <button type="submit">Delete</button>
+                    </form>
+                </li>
+
             <%})%>
         </ul>
         <a href="/upload">Add new file</a>

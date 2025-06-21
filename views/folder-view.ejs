@@ -1,0 +1,25 @@
+<html>
+    <head>
+        <title><%=folder.name %> - Folder</title>
+    </head>
+    <body>
+        <h2><%=folder.name%></h2>
+        <% if(files.length===0){ %>
+            <p>Folder is empty</p>
+        <% } else { %>
+             <ul>
+                <% files.forEach(file => { %>
+                <li>
+                    <%= file.filename %>
+                    <form action="/delete-file" method="post" style="display:inline;">
+                    <a href="/<%= file.filepath %>" target="_blank">View</a>
+                    <input type="hidden" name="fileId" value="<%= file.id %>">
+                    <button type="submit">Delete</button>
+                    </form>
+                </li>
+                <% }) %>
+            </ul>
+        <% } %>
+        <a href="/dashboard">Back to dashboard</a>
+    </body>
+</html>
