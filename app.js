@@ -9,6 +9,13 @@ const session = require("express-session")
 const multer = require("multer")
 const cloudinary = require("cloudinary").v2;
 const {CloudinaryStorage} = require("multer-storage-cloudinary");
+const cors = require("cors");
+const { error } = require("node:console");
+app.use(express.json());
+app.use(cors({
+    origin: "http://localhost:5173", 
+    credentials: true,
+}));
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -89,13 +96,27 @@ app.get("/", (req,res)=>{
 app.get("/login", (req,res)=>{
     res.render("login")
 })
-app.post("/login", passport.authenticate("local",{
-    successRedirect: "/dashboard",
-    failureRedirect: "/login",
-}))
+app.post("/login", (req, res, next) => {
+    passport.authenticate("local", (err, user, info) => {
+      if (err) return next(err);
+      if (!user) {
+        return res.status(401).json({ message: "Invalid username or password" });
+      }
+      req.logIn(user, (err) => {
+        if (err) return next(err);
+        return res.status(200).json({ message: "Login successful" });
+      });
+    })(req, res, next);
+  });
+  
 
 function ensureAuthenticated(req,res,next){
     if(req.isAuthenticated()) return next();
+
+    if (req.headers.accept.includes("application/json")) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+
     res.redirect("/login")
 }
 
@@ -138,24 +159,34 @@ app.post("/create-folder",ensureAuthenticated,async(req,res)=>{
     }
 })
 app.get("/dashboard",ensureAuthenticated,async(req,res)=>{
-    const folders = await prisma.folder.findMany({
-        where:{userId: req.user.id}
-    })
-    const files = await prisma.file.findMany({
-        where: {userId: req.user.id}
-    })
-    res.render("dashboard",{files, folders})
+    try{
+
+        const folders = await prisma.folder.findMany({
+            where:{userId: req.user.id}
+        })
+        const files = await prisma.file.findMany({
+            where: {userId: req.user.id}
+        })
+        // res.render("dashboard",{files, folders})
+        res.status(200).json({folders,files});
+    }catch(err){
+        console.error("Error loading data", err);
+        res.status(500).json({error:"Database error"});
+    }
 })
 app.use("/uploads", express.static("uploads"));
-app.post("/delete-file", async(req,res)=>{
-    const fileId = req.body.fileId;
-    await prisma.file.delete({
-        where:{
-            id: parseInt(fileId)
-        }
-    })
-    res.redirect("/dashboard")
-})
+app.delete("/delete-file", async (req, res) => {
+    try {
+        const fileId = parseInt(req.body.fileId);
+        await prisma.file.delete({
+            where: { id: fileId },
+        });
+        res.status(200).json({ message: "File deleted" });
+    } catch (err) {
+        console.error("Failed to delete file:", err);
+        res.status(500).json({ error: "Deletion failed" });
+    }
+});
 app.get("/folder/:id",ensureAuthenticated,async(req,res)=>{
     const folderId = parseInt(req.params.id)
     try{
@@ -168,13 +199,17 @@ app.get("/folder/:id",ensureAuthenticated,async(req,res)=>{
         if(!folder){
             return res.send("Folder not found");
         }
-        res.render("folder-view",{
-            folder,
-            files: folder.file
-        })
+        res.status(200).json({
+            folder: {
+              id: folder.id,
+              name: folder.name,
+            },
+            files: folder.file, 
+        });
     }catch(err){
         console.error(err);
-        res.send("Error loading folder")
+        console.error("Error loading files", err);
+        res.status(400).json({error:"Error loading folder"});
     }
 })
 app.get("/upload", ensureAuthenticated,async(req,res)=>{
