@@ -93,9 +93,7 @@ passport.deserializeUser(async(id,done)=>{
 app.get("/", (req,res)=>{
     res.redirect("/login")
 })
-app.get("/login", (req,res)=>{
-    res.render("login")
-})
+
 app.post("/login", (req, res, next) => {
     console.log("POST /login called");
     console.log("Body:", req.body);
@@ -130,10 +128,6 @@ function ensureAuthenticated(req,res,next){
     res.redirect("/login")
 }
 
-app.get("/sign-up", (req,res)=>{
-    res.render("sign-up");
-})
-
 app.post("/sign-up", async (req,res)=>{
     const {username, password} = req.body;
 
@@ -150,9 +144,7 @@ app.post("/sign-up", async (req,res)=>{
         res.send("Error creating user")
     }
 })
-app.get("/folder",ensureAuthenticated, (req,res)=>{
-    res.render("folders")
-})
+
 app.post("/folder", ensureAuthenticated, async (req, res) => {
     const { folderName } = req.body;
     try {
@@ -228,12 +220,12 @@ app.get("/folder/:id",ensureAuthenticated,async(req,res)=>{
         res.status(400).json({error:"Error loading folder"});
     }
 })
-app.get("/upload", ensureAuthenticated,async(req,res)=>{
-    const userFolders = await prisma.folder.findMany({
-        where: {userId: req.user.id}
-    })
-    res.render("upload", {userFolders})
-})
+// app.get("/upload", ensureAuthenticated,async(req,res)=>{
+//     const userFolders = await prisma.folder.findMany({
+//         where: {userId: req.user.id}
+//     })
+//     res.render("upload", {userFolders})
+// })
 app.post("/upload", ensureAuthenticated,upload.single('myFile'), async(req,res)=>{
     const folderId = req.body.folderId ? parseInt(req.body.folderId):null;
     if(!req.file){
