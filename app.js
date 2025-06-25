@@ -12,6 +12,7 @@ const {CloudinaryStorage} = require("multer-storage-cloudinary");
 const cors = require("cors");
 const { error } = require("node:console");
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors({
     origin: "https://filenest-nine.vercel.app", 
     credentials: true,
@@ -43,7 +44,6 @@ app.use(passport.session());
 
 app.set("views",path.join(__dirname,"views"))
 app.set("view engine","ejs")
-app.use(express.urlencoded({ extended: true }));
 
 passport.use(
     new Localstrategy(async(username,password,done)=>{
