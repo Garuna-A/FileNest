@@ -97,17 +97,27 @@ app.get("/login", (req,res)=>{
     res.render("login")
 })
 app.post("/login", (req, res, next) => {
+    console.log("POST /login called");
+    console.log("Body:", req.body);
+  
     passport.authenticate("local", (err, user, info) => {
-      if (err) return next(err);
+      if (err) {
+        console.error("Passport error:", err);
+        return res.status(500).json({ message: "Internal error" });
+      }
       if (!user) {
         return res.status(401).json({ message: "Invalid username or password" });
       }
+  
       req.logIn(user, (err) => {
-        if (err) return next(err);
+        if (err) {
+          console.error("Login error:", err);
+          return res.status(500).json({ message: "Login failed" });
+        }
         return res.status(200).json({ message: "Login successful" });
       });
     })(req, res, next);
-  });
+});
   
 
 function ensureAuthenticated(req,res,next){
@@ -245,6 +255,14 @@ app.post("/upload", ensureAuthenticated,upload.single('myFile'), async(req,res)=
         res.status(400).send("Error saving file to database")
     }
 })
+app.use((err, req, res, next) => {
+    console.error("Unhandled error:", err);
+    if (req.headers.accept?.includes("application/json")) {
+      res.status(500).json({ error: "Internal server error" });
+    } else {
+      res.status(500).send("Internal server error");
+    }
+  });
 
 app.listen(3000,()=>{
     console.log("Listening at http://localhost:3000")
