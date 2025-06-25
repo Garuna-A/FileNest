@@ -50,23 +50,25 @@ app.set("views",path.join(__dirname,"views"))
 app.set("view engine","ejs")
 
 passport.use(
-    new Localstrategy(async(username,password,done)=>{
-        try{
-            const user = await prisma.user.findUnique({where:{username}});
-            if(!user){
-                return done(null, false, {message: "No user found"});
-            }
-
-            if(password !== user.password){
-                return done(null,false, {message: "Incorrect password"});
-            }
-            return done(null,user)
-        }
-        catch(err){
-            return done(err)
-        }
+    new Localstrategy(async (username, password, done) => {
+      try {
+        console.log("Authenticating user:", username);
+        const user = await prisma.user.findUnique({ where: { username } });
+        console.log("User fetched:", user);
+  
+        if (!user) return done(null, false, { message: "No user found" });
+  
+        if (password !== user.password)
+          return done(null, false, { message: "Incorrect password" });
+  
+        return done(null, user);
+      } catch (err) {
+        console.error("Prisma error:", err);
+        return done(err);
+      }
     })
-)
+  );
+  
 
 passport.serializeUser((user,done)=>{
     done(null,user.id);
