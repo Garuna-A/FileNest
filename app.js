@@ -143,21 +143,27 @@ app.post("/sign-up", async (req,res)=>{
 app.get("/folder",ensureAuthenticated, (req,res)=>{
     res.render("folders")
 })
-app.post("/create-folder",ensureAuthenticated,async(req,res)=>{
-    const {folderName} = req.body;
-    try{
-        await prisma.folder.create({
-            data:{
-                name: folderName,
-                userId: req.user.id,
-            }
-        })
-        res.redirect("/upload")
-    }catch(err){
-        console.error(err);
-        res.status(500).send("Error creating folder");
+app.post("/folder", ensureAuthenticated, async (req, res) => {
+    const { folderName } = req.body;
+    try {
+      const folder = await prisma.folder.create({
+        data: {
+          name: folderName,
+          userId: req.user.id,
+        },
+      });
+      res.status(200).json({ folder });
+    } catch (err) {
+      console.error("Folder creation failed", err);
+      res.status(500).json({ error: "Failed to create folder" });
     }
-})
+});  
+app.get("/folder-list", ensureAuthenticated, async (req, res) => {
+    const folders = await prisma.folder.findMany({
+      where: { userId: req.user.id },
+    });
+    res.json({ folders });
+});
 app.get("/dashboard",ensureAuthenticated,async(req,res)=>{
     try{
 
