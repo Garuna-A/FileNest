@@ -1,5 +1,6 @@
 const express = require("express")
 const app = express();
+app.set("trust proxy", 1); 
 const path = require("node:path")
 const {PrismaClient} = require("./generated/prisma");
 const passport = require("passport");
