@@ -4,7 +4,14 @@ Filenest is a simple full-stack web application that allows users to upload file
 
 ## 🚀 Live Demo
 
+
+**Demo Credentials**:
+- **Username**: `test`
+- **Password**: `1234`
+
 🔗 [FileNest](https://filenest-nine.vercel.app/)
+
+
 
 ![Files Dashboard](https://github.com/Garuna-A/Filenest-frontend/blob/main/src/assets/Screenshot_26-6-2025_114539_filenest-nine.vercel.app.jpeg)
 ![Upload Page](https://github.com/Garuna-A/Filenest-frontend/blob/main/src/assets/Screenshot_26-6-2025_11462_filenest-nine.vercel.app.jpeg)
@@ -21,7 +28,7 @@ Filenest is a simple full-stack web application that allows users to upload file
 - **Frontend**: React, HTML, CSS
 - **Backend**: Node.js, Express, Multer, Prisma
 - **Database**: PostgreSQL
-- **Deployment**: Render
+- **Deployment**: Vercel
 
 ## 🔗 Repositories
 
